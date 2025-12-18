@@ -1,0 +1,63 @@
+name: netlify-plugin-entrolytics
+version: 2.0.0
+homepage: https://ng.entrolytics.click
+repository: https://github.com/entrolytics/entrolytics-ecosystem
+description: First-party growth analytics for the edge with automatic script injection and server-side tracking
+
+# Build event hooks used by this plugin
+build:
+  - onPreBuild  # Deploy edge function if enableEdgeTracking is true
+  - onPostBuild # Inject tracking script into HTML files
+  - onSuccess   # Track deployment to entrolytics-ng if trackDeployments is true
+
+# Compatibility requirements
+compatibility:
+  - node: ">=18"
+  - site_generators:
+      - hugo
+      - jekyll
+      - eleventy
+      - gatsby
+      - next
+      - astro
+      - all_static
+
+inputs:
+  - name: websiteId
+    description: Your Entrolytics website ID (required unless using ENTROLYTICS_WEBSITE_ID env var)
+    required: false
+  - name: host
+    description: Entrolytics host URL (defaults to https://ng.entrolytics.click)
+    required: false
+    default: https://ng.entrolytics.click
+  - name: autoTrack
+    description: Automatically track page views (default true)
+    required: false
+    default: true
+  - name: respectDnt
+    description: Respect Do Not Track browser setting
+    required: false
+    default: false
+  - name: injectInHead
+    description: Inject script in <head> instead of before </body>
+    required: false
+    default: true
+  - name: domains
+    description: Comma-separated list of domains for cross-domain tracking
+    required: false
+  - name: enableEdgeTracking
+    description: Deploy edge function for server-side tracking with geo data (sub-50ms latency)
+    required: false
+    default: false
+  - name: autoConfigureEdgeFunction
+    description: Automatically add edge function config to netlify.toml (default true when enableEdgeTracking is true)
+    required: false
+    default: true
+  # Phase 2: Deployment Tracking (requires entrolytics-ng)
+  - name: trackDeployments
+    description: Track deployments to entrolytics-ng for performance correlation
+    required: false
+    default: false
+  - name: apiKey
+    description: Entrolytics API key for deployment tracking (or use ENTROLYTICS_API_KEY env var)
+    required: false

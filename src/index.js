@@ -1,0 +1,352 @@
+/**
+ * Netlify Build Plugin for Entrolytics
+ *
+ * Automatically injects the Entrolytics tracking script into all HTML files
+ * during the Netlify build process. Optionally deploys edge function for
+ * server-side tracking with geo data extraction.
+ */
+
+import { readFile, writeFile, readdir, stat, mkdir, copyFile } from 'node:fs/promises';
+import { join, extname, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const DEFAULT_HOST = 'https://ng.entrolytics.click';
+
+/**
+ * Generate the Entrolytics script tag
+ */
+function generateScriptTag(options) {
+  const {
+    websiteId,
+    host = DEFAULT_HOST,
+    autoTrack = true,
+    respectDnt = false,
+    domains,
+  } = options;
+
+  const attrs = [
+    `src="${host.replace(/\/$/, '')}/script.js"`,
+    `data-website-id="${websiteId}"`,
+    'defer',
+  ];
+
+  if (!autoTrack) {
+    attrs.push('data-auto-track="false"');
+  }
+
+  if (respectDnt) {
+    attrs.push('data-do-not-track="true"');
+  }
+
+  if (domains) {
+    attrs.push(`data-domains="${domains}"`);
+  }
+
+  return `<script ${attrs.join(' ')}></script>`;
+}
+
+/**
+ * Recursively find all HTML files in a directory
+ */
+async function findHtmlFiles(dir, files = []) {
+  const entries = await readdir(dir);
+
+  for (const entry of entries) {
+    const fullPath = join(dir, entry);
+    const stats = await stat(fullPath);
+
+    if (stats.isDirectory()) {
+      await findHtmlFiles(fullPath, files);
+    } else if (extname(entry).toLowerCase() === '.html') {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
+/**
+ * Inject script into HTML content
+ */
+function injectScript(html, scriptTag, injectInHead = true) {
+  if (injectInHead) {
+    // Inject before </head>
+    if (html.includes('</head>')) {
+      return html.replace('</head>', `${scriptTag}\n</head>`);
+    }
+    // Fallback: inject after <head>
+    if (html.includes('<head>')) {
+      return html.replace('<head>', `<head>\n${scriptTag}`);
+    }
+  }
+
+  // Inject before </body>
+  if (html.includes('</body>')) {
+    return html.replace('</body>', `${scriptTag}\n</body>`);
+  }
+
+  // Last resort: append to end
+  return html + scriptTag;
+}
+
+/**
+ * Check if HTML already has Entrolytics script
+ */
+function hasEntrolyticsScript(html) {
+  return html.includes('entrolytics') && html.includes('data-website-id');
+}
+
+/**
+ * Deploy edge function for server-side tracking (optional)
+ */
+export const onPreBuild = async function ({
+  inputs,
+  constants,
+  utils: { build, status },
+}) {
+  // Only deploy edge function if explicitly enabled
+  if (!inputs.enableEdgeTracking) {
+    return;
+  }
+
+  const websiteId = inputs.websiteId || process.env.ENTROLYTICS_WEBSITE_ID;
+
+  if (!websiteId) {
+    build.failPlugin(
+      'Missing website ID. Set the websiteId input or ENTROLYTICS_WEBSITE_ID environment variable.'
+    );
+    return;
+  }
+
+  try {
+    // Create netlify/edge-functions directory in project root
+    const NETLIFY_BASE = constants.NETLIFY_BASE || process.cwd();
+    const edgeFunctionsDir = join(NETLIFY_BASE, 'netlify', 'edge-functions');
+
+    // Ensure directory exists
+    await mkdir(edgeFunctionsDir, { recursive: true });
+
+    // Copy edge function from plugin to project
+    const sourceFile = join(__dirname, 'edge-function.js');
+    const destFile = join(edgeFunctionsDir, 'entrolytics.js');
+
+    await copyFile(sourceFile, destFile);
+
+    // Auto-generate edge function config in netlify.toml if enabled
+    if (inputs.autoConfigureEdgeFunction !== false) {
+      await autoConfigureEdgeFunction(NETLIFY_BASE, status);
+    }
+
+    status.show({
+      title: 'Entrolytics Edge Function',
+      summary: 'Edge function deployed for server-side tracking',
+      text: 'Location: netlify/edge-functions/entrolytics.js',
+    });
+
+    console.log('✓ Entrolytics: Edge function deployed to netlify/edge-functions/entrolytics.js');
+    console.log('  Edge tracking enabled with geo data extraction');
+  } catch (error) {
+    build.failPlugin(`Failed to deploy edge function: ${error.message}`);
+  }
+};
+
+/**
+ * Auto-generate edge function config in netlify.toml
+ */
+async function autoConfigureEdgeFunction(NETLIFY_BASE, status) {
+  const tomlPath = join(NETLIFY_BASE, 'netlify.toml');
+
+  try {
+    let tomlContent = '';
+    try {
+      tomlContent = await readFile(tomlPath, 'utf-8');
+    } catch (error) {
+      // File doesn't exist, we'll create it
+      console.log('  netlify.toml not found, will create one');
+    }
+
+    // Check if edge function config already exists
+    if (tomlContent.includes('function = "entrolytics"')) {
+      console.log('  Edge function config already exists in netlify.toml');
+      return;
+    }
+
+    // Edge function configuration to add
+    const edgeFunctionConfig = `
+# Entrolytics Edge Function Configuration
+# Auto-generated by @entrolytics/netlify-plugin
+[[edge_functions]]
+  path = "/*"
+  function = "entrolytics"
+`;
+
+    // Append to existing file or create new
+    const newContent = tomlContent
+      ? `${tomlContent}\n${edgeFunctionConfig}`
+      : `${edgeFunctionConfig}`;
+
+    await writeFile(tomlPath, newContent, 'utf-8');
+
+    console.log('✓ Entrolytics: Edge function config added to netlify.toml');
+    console.log('  The edge function will run on all routes (/*)')');
+
+    status.show({
+      title: 'Edge Function Configured',
+      summary: 'Added [[edge_functions]] config to netlify.toml',
+      text: 'Edge function will run on all routes',
+    });
+  } catch (error) {
+    console.warn('  Warning: Could not auto-configure netlify.toml:', error.message);
+    console.warn('  You may need to manually add this to your netlify.toml:');
+    console.warn('  [[edge_functions]]');
+    console.warn('    path = "/*"');
+    console.warn('    function = "entrolytics"');
+  }
+}
+
+/**
+ * Track deployment to entrolytics-ng
+ * Phase 2: Deployment Tracking (requires entrolytics-ng)
+ */
+export const onSuccess = async function ({
+  inputs,
+  constants,
+  utils: { status },
+}) {
+  // Only track if deployment tracking is enabled
+  if (!inputs.trackDeployments) {
+    return;
+  }
+
+  const websiteId = inputs.websiteId || process.env.ENTROLYTICS_WEBSITE_ID;
+  const apiKey = inputs.apiKey || process.env.ENTROLYTICS_API_KEY;
+  const host = inputs.host || process.env.ENTROLYTICS_HOST || DEFAULT_HOST;
+
+  if (!websiteId || !apiKey) {
+    console.log('Entrolytics: Skipping deployment tracking (missing websiteId or apiKey)');
+    return;
+  }
+
+  // Get deployment info from Netlify environment
+  const deployId = process.env.DEPLOY_ID || process.env.BUILD_ID;
+  const gitSha = process.env.COMMIT_REF;
+  const gitBranch = process.env.BRANCH;
+  const deployUrl = process.env.DEPLOY_PRIME_URL || process.env.URL;
+
+  if (!deployId) {
+    console.log('Entrolytics: No deploy ID found, skipping deployment tracking');
+    return;
+  }
+
+  try {
+    const payload = {
+      website: websiteId,
+      deployId: deployId,
+      gitSha: gitSha,
+      gitBranch: gitBranch,
+      deployUrl: deployUrl,
+      source: 'netlify',
+    };
+
+    const response = await fetch(`${host}/api/websites/${websiteId}/deployments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      console.log(`✓ Entrolytics: Deployment tracked (${deployId})`);
+      status.show({
+        title: 'Entrolytics Deployment Tracked',
+        summary: `Deployment ${deployId.slice(0, 8)}... registered`,
+        text: gitSha ? `Commit: ${gitSha.slice(0, 7)}` : undefined,
+      });
+    } else {
+      console.warn(`Entrolytics: Failed to track deployment: ${response.status}`);
+    }
+  } catch (error) {
+    console.warn('Entrolytics: Error tracking deployment:', error.message);
+  }
+};
+
+export const onPostBuild = async function ({
+  inputs,
+  constants,
+  utils: { build, status },
+}) {
+  const { PUBLISH_DIR } = constants;
+
+  // Get website ID from inputs or environment variable
+  const websiteId = inputs.websiteId || process.env.ENTROLYTICS_WEBSITE_ID;
+
+  if (!websiteId) {
+    build.failPlugin(
+      'Missing website ID. Set the websiteId input or ENTROLYTICS_WEBSITE_ID environment variable.'
+    );
+    return;
+  }
+
+  const host = inputs.host || process.env.ENTROLYTICS_HOST || DEFAULT_HOST;
+
+  const options = {
+    websiteId,
+    host,
+    autoTrack: inputs.autoTrack !== false,
+    respectDnt: inputs.respectDnt === true,
+    domains: inputs.domains || process.env.ENTROLYTICS_DOMAINS,
+  };
+
+  const scriptTag = generateScriptTag(options);
+
+  try {
+    // Find all HTML files in the publish directory
+    const htmlFiles = await findHtmlFiles(PUBLISH_DIR);
+
+    if (htmlFiles.length === 0) {
+      status.show({
+        title: 'Entrolytics',
+        summary: 'No HTML files found to inject analytics',
+        text: `Searched in: ${PUBLISH_DIR}`,
+      });
+      return;
+    }
+
+    let injectedCount = 0;
+    let skippedCount = 0;
+
+    for (const filePath of htmlFiles) {
+      const content = await readFile(filePath, 'utf-8');
+
+      // Skip if already has Entrolytics
+      if (hasEntrolyticsScript(content)) {
+        skippedCount++;
+        continue;
+      }
+
+      const newContent = injectScript(content, scriptTag, inputs.injectInHead !== false);
+      await writeFile(filePath, newContent, 'utf-8');
+      injectedCount++;
+    }
+
+    status.show({
+      title: 'Entrolytics Analytics Injected',
+      summary: `Injected into ${injectedCount} HTML file${injectedCount !== 1 ? 's' : ''}`,
+      text: skippedCount > 0
+        ? `Skipped ${skippedCount} file${skippedCount !== 1 ? 's' : ''} (already had Entrolytics)`
+        : `Website ID: ${websiteId}`,
+    });
+
+    console.log(`✓ Entrolytics: Injected analytics into ${injectedCount} HTML files`);
+    if (skippedCount > 0) {
+      console.log(`  Skipped ${skippedCount} files (already had Entrolytics script)`);
+    }
+  } catch (error) {
+    build.failPlugin(`Failed to inject Entrolytics script: ${error.message}`);
+  }
+};
