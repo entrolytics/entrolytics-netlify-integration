@@ -79,7 +79,7 @@ View analytics in dashboard
 2. Navigate to **Site settings** → **Build & deploy** → **Plugins**
 3. Search for "Entrolytics"
 4. Click **Install**
-5. Add your `ENTROLYTICS_NG_WEBSITE_ID` environment variable
+5. Add your `ENTROLYTICS_WEBSITE_ID` environment variable
 
 ### Via netlify.toml
 
@@ -100,7 +100,7 @@ Or use environment variables:
 package = "@entrolytics/netlify-plugin"
 ```
 
-Then set `ENTROLYTICS_NG_WEBSITE_ID` in your Netlify environment variables.
+Then set `ENTROLYTICS_WEBSITE_ID` in your Netlify environment variables.
 
 ### Via npm
 
@@ -114,8 +114,8 @@ npm install -D @entrolytics/netlify-plugin
 
 | Input | Description | Default |
 |-------|-------------|---------|
-| `websiteId` | Your Entrolytics website ID | `ENTROLYTICS_NG_WEBSITE_ID` env var |
-| `host` | Entrolytics host URL | `https://ng.entrolytics.click` |
+| `websiteId` | Your Entrolytics website ID | `ENTROLYTICS_WEBSITE_ID` env var |
+| `host` | Entrolytics host URL | `https://entrolytics.click` |
 | `autoTrack` | Automatically track page views | `true` |
 | `respectDnt` | Respect Do Not Track setting | `false` |
 | `injectInHead` | Inject in `<head>` vs before `</body>` | `true` |
@@ -126,7 +126,7 @@ npm install -D @entrolytics/netlify-plugin
 
 | Variable | Description |
 |----------|-------------|
-| `ENTROLYTICS_NG_WEBSITE_ID` | Your Entrolytics website ID |
+| `ENTROLYTICS_WEBSITE_ID` | Your Entrolytics website ID |
 | `ENTROLYTICS_HOST` | Custom Entrolytics host URL |
 | `ENTROLYTICS_DOMAINS` | Cross-domain tracking domains |
 | `ENTROLYTICS_EDGE_MODE` | Edge tracking mode: `auto` (both), `server` (server-only), `client` (client-only) |
@@ -200,8 +200,8 @@ This deploys a Netlify Edge Function that:
 **Environment Variables for Edge Function:**
 
 ```bash
-ENTROLYTICS_NG_WEBSITE_ID=abc123-def456
-ENTROLYTICS_HOST=https://ng.entrolytics.click  # Optional: self-hosted instance
+ENTROLYTICS_WEBSITE_ID=abc123-def456
+ENTROLYTICS_HOST=https://entrolytics.click  # Optional: self-hosted instance
 ENTROLYTICS_EDGE_MODE=auto  # Options: auto (default), server, client
 ```
 
@@ -308,7 +308,7 @@ The plugin skips files that already contain the Entrolytics script to prevent du
 ### Build failures
 
 Check that:
-- The `websiteId` input or `ENTROLYTICS_NG_WEBSITE_ID` env var is set
+- The `websiteId` input or `ENTROLYTICS_WEBSITE_ID` env var is set
 - Your publish directory contains valid HTML files
 
 ## Local Development

@@ -10,7 +10,7 @@
  * when enableEdgeTracking is set to true.
  */
 
-const DEFAULT_HOST = 'https://ng.entrolytics.click';
+const DEFAULT_HOST = 'https://entrolytics.click';
 
 /**
  * Extract geo data from Netlify Edge context

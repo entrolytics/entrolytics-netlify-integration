@@ -1,6 +1,6 @@
 {
   "name": "@entrolytics/netlify-plugin",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Netlify integration for Entrolytics - First-party growth analytics for the edge",
   "keywords": [
     "netlify",
@@ -9,13 +9,13 @@
     "analytics",
     "web-analytics"
   ],
-  "homepage": "https://ng.entrolytics.click",
+  "homepage": "https://entrolytics.click",
   "repository": {
     "type": "git",
     "url": "https://github.com/entrolytics/netlify-plugin"
   },
   "license": "MIT",
-  "author": "Entrolytics <hey@ng.entrolytics.click>",
+  "author": "Entrolytics <hey@entrolytics.click>",
   "type": "module",
   "main": "src/index.js",
   "files": [
@@ -26,10 +26,10 @@
     "test": "node --test src/*.test.js"
   },
   "devDependencies": {
-    "@netlify/build": "^35.5.7"
+    "@netlify/build": "^35.5.9"
   },
   "engines": {
-    "node": ">=24.x"
+    "node": ">=22.x"
   },
   "publishConfig": {
     "access": "public"

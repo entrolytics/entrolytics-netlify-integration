@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const DEFAULT_HOST = 'https://ng.entrolytics.click';
+const DEFAULT_HOST = 'https://entrolytics.click';
 
 /**
  * Generate the Entrolytics script tag
@@ -208,8 +208,8 @@ async function autoConfigureEdgeFunction(NETLIFY_BASE, status) {
 }
 
 /**
- * Track deployment to entrolytics-ng
- * Phase 2: Deployment Tracking (requires entrolytics-ng)
+ * Track deployment to entrolytics
+ * Phase 2: Deployment Tracking (requires entrolytics)
  */
 export const onSuccess = async function ({
   inputs,

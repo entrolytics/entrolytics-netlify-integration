@@ -1,6 +1,6 @@
 name: netlify-plugin-entrolytics
 version: 2.0.0
-homepage: https://ng.entrolytics.click
+homepage: https://entrolytics.click
 repository: https://github.com/entrolytics/entrolytics-ecosystem
 description: First-party growth analytics for the edge with automatic script injection and server-side tracking
 
@@ -8,7 +8,7 @@ description: First-party growth analytics for the edge with automatic script inj
 build:
   - onPreBuild  # Deploy edge function if enableEdgeTracking is true
   - onPostBuild # Inject tracking script into HTML files
-  - onSuccess   # Track deployment to entrolytics-ng if trackDeployments is true
+  - onSuccess   # Track deployment to entrolytics if trackDeployments is true
 
 # Compatibility requirements
 compatibility:
@@ -27,9 +27,9 @@ inputs:
     description: Your Entrolytics website ID (required unless using ENTROLYTICS_WEBSITE_ID env var)
     required: false
   - name: host
-    description: Entrolytics host URL (defaults to https://ng.entrolytics.click)
+    description: Entrolytics host URL (defaults to https://entrolytics.click)
     required: false
-    default: https://ng.entrolytics.click
+    default: https://entrolytics.click
   - name: autoTrack
     description: Automatically track page views (default true)
     required: false
@@ -53,9 +53,9 @@ inputs:
     description: Automatically add edge function config to netlify.toml (default true when enableEdgeTracking is true)
     required: false
     default: true
-  # Phase 2: Deployment Tracking (requires entrolytics-ng)
+  # Phase 2: Deployment Tracking (requires entrolytics)
   - name: trackDeployments
-    description: Track deployments to entrolytics-ng for performance correlation
+    description: Track deployments to entrolytics for performance correlation
     required: false
     default: false
   - name: apiKey
