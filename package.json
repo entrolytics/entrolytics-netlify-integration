@@ -1,37 +1,50 @@
 {
   "name": "@entrolytics/netlify-plugin",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Netlify integration for Entrolytics - First-party growth analytics for the edge",
   "keywords": [
+    "analytics",
+    "entrolytics",
     "netlify",
     "netlify-plugin",
-    "entrolytics",
-    "analytics",
     "web-analytics"
   ],
   "homepage": "https://entrolytics.click",
+  "license": "MIT",
+  "author": "Entrolytics <hey@entrolytics.click>",
   "repository": {
     "type": "git",
     "url": "https://github.com/entrolytics/netlify-plugin"
   },
-  "license": "MIT",
-  "author": "Entrolytics <hey@entrolytics.click>",
-  "type": "module",
-  "main": "src/index.js",
   "files": [
     "src",
     "manifest.yml"
   ],
-  "scripts": {
-    "test": "node --test src/*.test.js"
-  },
-  "devDependencies": {
-    "@netlify/build": "^35.5.9"
-  },
-  "engines": {
-    "node": ">=22.x"
-  },
+  "type": "module",
+  "main": "src/index.js",
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "check": "vp run lint:check",
+    "test": "node --test src/*.test.js",
+    "lint": "vp lint --fix src && vp fmt --write src package.json manifest.yml",
+    "lint:check": "vp lint src && vp fmt --check src package.json manifest.yml",
+    "lint:fix-unsafe": "vp lint -f stylish --import-plugin --fix --fix-suggestions --fix-dangerously src/",
+    "format": "vp fmt --write src package.json manifest.yml"
+  },
+  "devDependencies": {
+    "@netlify/build": "^35.11.2",
+    "vite-plus": "latest"
+  },
+  "engines": {
+    "node": ">=24.x"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+      "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+    }
   }
 }

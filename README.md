@@ -1,9 +1,9 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/entrolytics/.github/main/media/entrov2.png" alt="Entrolytics" width="64" height="64">
+- <img src="https://raw.githubusercontent.com/entrolytics/.github/main/media/entrov2.png" alt="Entrolytics" width="64" height="64">
 
-  [![npm](https://img.shields.io/npm/v/@entrolytics/netlify-plugin.svg?logo=npm)](https://www.npmjs.com/package/@entrolytics/netlify-plugin)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-  [![Netlify](https://img.shields.io/badge/Netlify-Build%20Plugin-00C7B7.svg?logo=netlify&logoColor=white)](https://www.netlify.com/)
+[![npm](https://img.shields.io/npm/v/@entrolytics/netlify-plugin.svg?logo=npm)](https://www.npmjs.com/package/@entrolytics/netlify-plugin)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Netlify](https://img.shields.io/badge/Netlify-Build%20Plugin-00C7B7.svg?logo=netlify\&logoColor=white)](https://www.netlify.com/)
 
 </div>
 
@@ -14,6 +14,7 @@
 **@entrolytics/netlify-plugin** is the official Netlify Build Plugin for Entrolytics - first-party growth analytics for the edge. Automatically inject analytics tracking into your Netlify sites.
 
 **Why use this plugin?**
+
 - One-click install from Netlify UI
 - Automatic script injection into all HTML files
 - Optional Edge Function for server-side tracking
@@ -26,6 +27,7 @@
 <td width="50%">
 
 ### Analytics
+
 - Automatic page view tracking
 - Cross-domain tracking support
 - Privacy-focused with DNT respect
@@ -35,6 +37,7 @@
 <td width="50%">
 
 ### Developer Experience
+
 - Netlify UI or netlify.toml setup
 - Environment variable configuration
 - Edge function deployment
@@ -112,24 +115,24 @@ npm install -D @entrolytics/netlify-plugin
 
 ### Plugin Inputs
 
-| Input | Description | Default |
-|-------|-------------|---------|
-| `websiteId` | Your Entrolytics website ID | `ENTROLYTICS_WEBSITE_ID` env var |
-| `host` | Entrolytics host URL | `https://entrolytics.click` |
-| `autoTrack` | Automatically track page views | `true` |
-| `respectDnt` | Respect Do Not Track setting | `false` |
-| `injectInHead` | Inject in `<head>` vs before `</body>` | `true` |
-| `domains` | Comma-separated domains for cross-domain tracking | - |
-| `enableEdgeTracking` | Deploy edge function for server-side tracking with geo data | `false` |
+| Input                | Description                                                 | Default                          |
+| -------------------- | ----------------------------------------------------------- | -------------------------------- |
+| `websiteId`          | Your Entrolytics website ID                                 | `ENTROLYTICS_WEBSITE_ID` env var |
+| `host`               | Entrolytics host URL                                        | `https://entrolytics.click`      |
+| `autoTrack`          | Automatically track page views                              | `true`                           |
+| `respectDnt`         | Respect Do Not Track setting                                | `false`                          |
+| `injectInHead`       | Inject in `<head>` vs before `</body>`                      | `true`                           |
+| `domains`            | Comma-separated domains for cross-domain tracking           | -                                |
+| `enableEdgeTracking` | Deploy edge function for server-side tracking with geo data | `false`                          |
 
 ### Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `ENTROLYTICS_WEBSITE_ID` | Your Entrolytics website ID |
-| `ENTROLYTICS_HOST` | Custom Entrolytics host URL |
-| `ENTROLYTICS_DOMAINS` | Cross-domain tracking domains |
-| `ENTROLYTICS_EDGE_MODE` | Edge tracking mode: `auto` (both), `server` (server-only), `client` (client-only) |
+| Variable                 | Description                                                                       |
+| ------------------------ | --------------------------------------------------------------------------------- |
+| `ENTROLYTICS_WEBSITE_ID` | Your Entrolytics website ID                                                       |
+| `ENTROLYTICS_HOST`       | Custom Entrolytics host URL                                                       |
+| `ENTROLYTICS_DOMAINS`    | Cross-domain tracking domains                                                     |
+| `ENTROLYTICS_EDGE_MODE`  | Edge tracking mode: `auto` (both), `server` (server-only), `client` (client-only) |
 
 ### Example Configurations
 
@@ -191,7 +194,8 @@ package = "@entrolytics/netlify-plugin"
 ```
 
 This deploys a Netlify Edge Function that:
-- **Uses edge-optimized endpoint** (`/api/send-native`) for edge-to-edge communication
+
+- **Uses canonical endpoint** (`/collect`) for edge-to-edge communication
 - Tracks page views at the edge (before your origin server)
 - Extracts geo data from Netlify headers (country, region, city, lat/long)
 - Provides **10-50ms response times globally** (vs 50-150ms for origin tracking)
@@ -202,17 +206,20 @@ This deploys a Netlify Edge Function that:
 ```bash
 ENTROLYTICS_WEBSITE_ID=abc123-def456
 ENTROLYTICS_HOST=https://entrolytics.click  # Optional: self-hosted instance
+
 ENTROLYTICS_EDGE_MODE=auto  # Options: auto (default), server, client
+
 ```
 
 **Edge Modes:**
+
 - `auto` - Both server-side (edge) and client-side tracking
 - `server` - Server-side tracking only (edge function)
 - `client` - Client-side tracking only (injected script)
 
 ## Edge Optimization
 
-When edge tracking is enabled (`enableEdgeTracking: true`), the Netlify Edge Function automatically uses the **Edge Runtime endpoint** (`/api/send-native`) for optimal performance:
+When edge tracking is enabled (`enableEdgeTracking: true`), the Netlify Edge Function uses the canonical ingestion endpoint (`/collect`) for optimal performance:
 
 - **Edge-to-Edge Communication**: Netlify Edge → Entrolytics Edge with <50ms latency
 - **Global Distribution**: Automatic routing to the nearest edge location
@@ -220,6 +227,7 @@ When edge tracking is enabled (`enableEdgeTracking: true`), the Netlify Edge Fun
 - **Scalability**: Built on both Netlify and Entrolytics edge networks
 
 The edge endpoint is specifically optimized for edge runtime environments and provides:
+
 - 3x faster response times compared to Node.js endpoints
 - 10x faster cold starts
 - Lower infrastructure costs
@@ -250,6 +258,7 @@ When `enableEdgeTracking` is enabled, the plugin also:
 4. Sends tracking data to Entrolytics with **sub-50ms latency**
 
 The edge function runs **before** your origin server, providing:
+
 - **3x faster** response times (10-50ms vs 50-150ms)
 - **10x faster** cold starts (<100ms vs 500ms-2s)
 - **50% lower cost** compared to origin-based tracking
@@ -261,15 +270,15 @@ After the plugin injects the script, you can track custom events in your JavaScr
 
 ```javascript
 // Track a custom event
-window.entrolytics?.track('purchase', {
+window.entrolytics?.track("purchase", {
   revenue: 99.99,
-  currency: 'USD'
+  currency: "USD",
 });
 
 // Identify a user
-window.entrolytics?.identify('user-123', {
-  email: 'user@example.com',
-  plan: 'pro'
+window.entrolytics?.identify("user-123", {
+  email: "user@example.com",
+  plan: "pro",
 });
 ```
 
@@ -278,6 +287,7 @@ window.entrolytics?.identify('user-123', {
 ### Static Site Generators
 
 This plugin works great with static site generators like:
+
 - Hugo
 - Jekyll
 - Eleventy
@@ -288,6 +298,7 @@ This plugin works great with static site generators like:
 ### Single Page Applications
 
 For SPAs that don't generate multiple HTML files, consider using our framework-specific packages:
+
 - `@entrolytics/react` for React
 - `@entrolytics/vue` for Vue
 - `@entrolytics/svelte` for Svelte
@@ -308,6 +319,7 @@ The plugin skips files that already contain the Entrolytics script to prevent du
 ### Build failures
 
 Check that:
+
 - The `websiteId` input or `ENTROLYTICS_WEBSITE_ID` env var is set
 - Your publish directory contains valid HTML files
 

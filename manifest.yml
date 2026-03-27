@@ -6,9 +6,9 @@ description: First-party growth analytics for the edge with automatic script inj
 
 # Build event hooks used by this plugin
 build:
-  - onPreBuild  # Deploy edge function if enableEdgeTracking is true
+  - onPreBuild # Deploy edge function if enableEdgeTracking is true
   - onPostBuild # Inject tracking script into HTML files
-  - onSuccess   # Track deployment to entrolytics if trackDeployments is true
+  - onSuccess # Track deployment to entrolytics if trackDeployments is true
 
 # Compatibility requirements
 compatibility:
