@@ -10,7 +10,11 @@
  * when enableEdgeTracking is set to true.
  */
 
-const DEFAULT_HOST = "https://entrolytics.click";
+const DEFAULT_HOST = "https://api.entrolytics.click";
+const VISITOR_COOKIE_NAME = "entrolytics_vid";
+const SESSION_COOKIE_NAME = "entrolytics_sid";
+const VISITOR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+const SESSION_COOKIE_MAX_AGE = 60 * 30;
 
 function createUuid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
@@ -18,6 +22,50 @@ function createUuid() {
     const value = char === "x" ? rand : (rand & 0x3) | 0x8;
     return value.toString(16);
   });
+}
+
+function parseCookies(header) {
+  if (!header) {
+    return {};
+  }
+
+  return header.split(";").reduce((cookies, part) => {
+    const [rawKey, ...rawValue] = part.trim().split("=");
+    if (!rawKey || rawValue.length === 0) {
+      return cookies;
+    }
+
+    cookies[rawKey] = decodeURIComponent(rawValue.join("="));
+    return cookies;
+  }, {});
+}
+
+function buildCookie(name, value, secure, maxAge) {
+  const parts = [`${name}=${encodeURIComponent(value)}`, "Path=/", "SameSite=Lax"];
+  if (typeof maxAge === "number") {
+    parts.push(`Max-Age=${maxAge}`);
+  }
+  if (secure) {
+    parts.push("Secure");
+  }
+  return parts.join("; ");
+}
+
+function getTrackingIds(request) {
+  const cookies = parseCookies(request.headers.get("cookie") || "");
+  const secure = new URL(request.url).protocol === "https:";
+
+  const visitorId = cookies[VISITOR_COOKIE_NAME] || createUuid();
+  const sessionId = cookies[SESSION_COOKIE_NAME] || createUuid();
+  const setCookies = [];
+
+  if (!cookies[VISITOR_COOKIE_NAME]) {
+    setCookies.push(buildCookie(VISITOR_COOKIE_NAME, visitorId, secure, VISITOR_COOKIE_MAX_AGE));
+  }
+
+  setCookies.push(buildCookie(SESSION_COOKIE_NAME, sessionId, secure, SESSION_COOKIE_MAX_AGE));
+
+  return { visitorId, sessionId, setCookies };
 }
 
 /**
@@ -38,7 +86,7 @@ function extractGeoData(context) {
 /**
  * Send tracking event to Entrolytics
  */
-async function trackEvent(options, context, request) {
+async function trackEvent(options, context, request, trackingIds) {
   const { websiteId, apiKey, host = DEFAULT_HOST } = options;
 
   if (!apiKey) {
@@ -54,8 +102,10 @@ async function trackEvent(options, context, request) {
 
   const payload = {
     websiteId,
-    sessionId: createUuid(),
-    visitorId: createUuid(),
+    eventId: crypto.randomUUID(),
+    timestamp: new Date().toISOString(),
+    sessionId: trackingIds.sessionId,
+    visitorId: trackingIds.visitorId,
     url: url.toString(),
     eventType: "pageview",
     ...(normalizedReferrer && { referrer: normalizedReferrer }),
@@ -114,6 +164,7 @@ export default async function (request, context) {
   }
 
   const url = new URL(request.url);
+  const trackingIds = getTrackingIds(request);
 
   // Skip tracking for:
   // - Static assets (images, CSS, JS, fonts)
@@ -146,12 +197,23 @@ export default async function (request, context) {
 
     // Fire and forget - don't await
     if (trackingMode === "auto" || trackingMode === "server") {
-      trackEvent(options, context, request).catch(() => {});
+      trackEvent(options, context, request, trackingIds).catch(() => {});
     }
   }
 
   // Always forward the request to origin
-  return context.next();
+  const response = await context.next();
+  const headers = new Headers(response.headers);
+
+  for (const cookie of trackingIds.setCookies) {
+    headers.append("Set-Cookie", cookie);
+  }
+
+  return new Response(response.body, {
+    headers,
+    status: response.status,
+    statusText: response.statusText,
+  });
 }
 
 // Edge function configuration

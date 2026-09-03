@@ -9,11 +9,12 @@
 import { readFile, writeFile, readdir, stat, mkdir, copyFile } from "node:fs/promises";
 import { join, extname, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { API_ROUTES } from "@entrolytics/shared";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const DEFAULT_HOST = "https://entrolytics.click";
+const DEFAULT_HOST = "https://api.entrolytics.click";
 
 /**
  * Generate the Entrolytics script tag
@@ -229,7 +230,7 @@ export const onSuccess = async function ({ inputs, utils: { status } }) {
 
   try {
     const payload = {
-      website: websiteId,
+      websiteId,
       deployId: deployId,
       gitSha: gitSha,
       gitBranch: gitBranch,
@@ -237,11 +238,11 @@ export const onSuccess = async function ({ inputs, utils: { status } }) {
       source: "netlify",
     };
 
-    const response = await fetch(`${host}/api/websites/${websiteId}/deployments`, {
+    const response = await fetch(`${host}${API_ROUTES.deployments}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        "x-api-key": apiKey,
       },
       body: JSON.stringify(payload),
     });

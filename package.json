@@ -1,6 +1,6 @@
 {
   "name": "@entrolytics/netlify-plugin",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Netlify integration for Entrolytics - First-party growth analytics for the edge",
   "keywords": [
     "analytics",
@@ -26,25 +26,23 @@
     "access": "public"
   },
   "scripts": {
-    "check": "vp run lint:check",
+    "check": "pnpm lint:check && pnpm test",
     "test": "node --test src/*.test.js",
     "lint": "vp lint --fix src && vp fmt --write src package.json manifest.yml",
     "lint:check": "vp lint src && vp fmt --check src package.json manifest.yml",
     "lint:fix-unsafe": "vp lint -f stylish --import-plugin --fix --fix-suggestions --fix-dangerously src/",
     "format": "vp fmt --write src package.json manifest.yml"
   },
+  "dependencies": {
+    "@entrolytics/shared": "2.4.2"
+  },
   "devDependencies": {
-    "@netlify/build": "^35.11.2",
-    "vite-plus": "latest"
+    "@netlify/build": "^36.3.2",
+    "vite": "^8.2.1",
+    "vite-plus": "^0.2.8"
   },
   "engines": {
-    "node": ">=24.x"
+    "node": ">=24.19.0"
   },
-  "packageManager": "pnpm@10.33.0",
-  "pnpm": {
-    "overrides": {
-      "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-      "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
-    }
-  }
+  "packageManager": "pnpm@11.21.0"
 }

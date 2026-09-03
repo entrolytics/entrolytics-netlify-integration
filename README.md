@@ -3,7 +3,7 @@
 
 [![npm](https://img.shields.io/npm/v/@entrolytics/netlify-plugin.svg?logo=npm)](https://www.npmjs.com/package/@entrolytics/netlify-plugin)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Netlify](https://img.shields.io/badge/Netlify-Build%20Plugin-00C7B7.svg?logo=netlify\&logoColor=white)](https://www.netlify.com/)
+[![Netlify](https://img.shields.io/badge/Netlify-Build%20Plugin-00C7B7.svg?logo=netlify&logoColor=white)](https://www.netlify.com/)
 
 </div>
 
