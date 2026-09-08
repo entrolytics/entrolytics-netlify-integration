@@ -1,6 +1,6 @@
 {
   "name": "@entrolytics/netlify-plugin",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Netlify integration for Entrolytics - First-party growth analytics for the edge",
   "keywords": [
     "analytics",
@@ -34,7 +34,7 @@
     "format": "vp fmt --write src package.json manifest.yml"
   },
   "dependencies": {
-    "@entrolytics/shared": "^3.0.0"
+    "@entrolytics/shared": "^3.0.1"
   },
   "devDependencies": {
     "@netlify/build": "^36.4.6",
