@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@entrolytics/shared':
-        specifier: 2.4.2
-        version: 2.4.2
+        specifier: ^3.0.0
+        version: 3.0.0
     devDependencies:
       '@netlify/build':
         specifier: ^36.4.6
@@ -78,8 +78,8 @@ packages:
     resolution: {integrity: sha512-v6oD9Ukp+N7V4n6p5I/+mM5fIohSfkrDSGlFm5w/pYmchvbk+sMIHsLxrFJ5Lnujewj1BzWL0K84d88lwZAMQA==}
     engines: {node: '>=18'}
 
-  '@entrolytics/shared@2.4.2':
-    resolution: {integrity: sha512-fSgdPm0wgdiSs1FPr8SozLYX/JwMcm3034Gw+g2DIqYrMIZ419a8DAXh92nXWUxjSwb0psk3p25r3LUUPuv+eQ==}
+  '@entrolytics/shared@3.0.0':
+    resolution: {integrity: sha512-9JwCk8Ecp6Q0jvjw8nhkfmdmXU6P7J3aglR9sL3HDOTYacmo6+5yWbQJw4w8TNR8YG2ZB94jHzhhb0uszSJcMQ==}
 
   '@envelop/instrumentation@1.0.0':
     resolution: {integrity: sha512-cxgkB66RQB95H3X27jlnxCRNTmPuSTgmBAq6/4n2Dtv4hsk4yz8FadA1ggmd0uZzvKqWD6CR+WFgTjhDqg7eyw==}
@@ -3265,7 +3265,7 @@ snapshots:
       gonzales-pe: 4.3.0
       node-source-walk: 7.0.2
 
-  '@entrolytics/shared@2.4.2': {}
+  '@entrolytics/shared@3.0.0': {}
 
   '@envelop/instrumentation@1.0.0':
     dependencies:

@@ -1,3 +1,7 @@
 allowBuilds:
   esbuild: true
   unix-dgram: true
+
+# TypeScript tracks the `next` nightly, which is republished daily and can never
+# satisfy a 24h minimum age. Matches entrolytics/pnpm-workspace.yaml.
+minimumReleaseAge: 0
