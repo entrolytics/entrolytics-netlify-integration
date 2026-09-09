@@ -28,18 +28,18 @@
   "scripts": {
     "check": "pnpm lint:check && pnpm test",
     "test": "node --test src/*.test.js",
-    "lint": "vp lint --fix src && vp fmt --write src package.json manifest.yml",
-    "lint:check": "vp lint src && vp fmt --check src package.json manifest.yml",
-    "lint:fix-unsafe": "vp lint -f stylish --import-plugin --fix --fix-suggestions --fix-dangerously src/",
-    "format": "vp fmt --write src package.json manifest.yml"
+    "lint": "oxlint --fix src && oxfmt --write src package.json manifest.yml",
+    "lint:check": "oxlint src && oxfmt --check src package.json manifest.yml",
+    "lint:fix-unsafe": "oxlint -f stylish --import-plugin --fix --fix-suggestions --fix-dangerously src/",
+    "format": "oxfmt --write src package.json manifest.yml"
   },
   "dependencies": {
     "@entrolytics/shared": "^3.0.1"
   },
   "devDependencies": {
-    "@netlify/build": "^36.4.6",
-    "vite": "^8.2.2",
-    "vite-plus": "^0.3.1"
+    "@netlify/build": "^36.4.7",
+    "oxfmt": "^0.67.0",
+    "oxlint": "^1.82.0"
   },
   "engines": {
     "node": ">=24.20.0"
