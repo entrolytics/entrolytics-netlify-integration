@@ -51,11 +51,42 @@ function buildCookie(name, value, secure, maxAge) {
   return parts.join("; ");
 }
 
-function getTrackingIds(request) {
+/**
+ * A site-scoped visitor id that rotates at midnight UTC, derived from the visitor's IP address and
+ * user agent.
+ *
+ * A new random id for every request without a visitor cookie counted each such request as a new
+ * visitor. The API identifies browser visitors the same way, with a daily keyed hash and no
+ * cookie. The key is the API key, so the id cannot be recomputed from an IP address and user
+ * agent alone.
+ */
+async function deriveVisitorId(apiKey, websiteId, ip, userAgent) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(apiKey),
+    { hash: "SHA-256", name: "HMAC" },
+    false,
+    ["sign"],
+  );
+  const day = new Date().toISOString().slice(0, 10);
+  const message = `${websiteId}\u0000${day}\u0000${ip}\u0000${userAgent}`;
+  const bytes = new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(message)));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes.slice(0, 16), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+async function getTrackingIds(request, context, apiKey, websiteId) {
   const cookies = parseCookies(request.headers.get("cookie") || "");
   const secure = new URL(request.url).protocol === "https:";
+  const ip = context.ip || "";
+  const userAgent = request.headers.get("user-agent") || "";
 
-  const visitorId = cookies[VISITOR_COOKIE_NAME] || createUuid();
+  const visitorId =
+    cookies[VISITOR_COOKIE_NAME] ||
+    (ip || userAgent ? await deriveVisitorId(apiKey, websiteId, ip, userAgent) : createUuid());
   const sessionId = cookies[SESSION_COOKIE_NAME] || createUuid();
   const setCookies = [];
 
@@ -132,7 +163,12 @@ async function trackEvent(options, context, request, trackingIds) {
       headers: {
         "Content-Type": "application/json",
         "x-api-key": apiKey,
-        "User-Agent": request.headers.get("user-agent") || "Netlify-Edge-Function",
+        "User-Agent": "Netlify-Edge-Function",
+        // The API attributes and bot-screens the visitor only from these headers.
+        ...(request.headers.get("user-agent") && {
+          "X-Forwarded-User-Agent": request.headers.get("user-agent"),
+        }),
+        ...(context.ip && { "X-Forwarded-For": context.ip }),
       },
       body: JSON.stringify(payload),
       signal: controller.signal,
@@ -164,7 +200,7 @@ export default async function (request, context) {
   }
 
   const url = new URL(request.url);
-  const trackingIds = getTrackingIds(request);
+  const trackingIds = await getTrackingIds(request, context, apiKey, websiteId);
 
   // Skip tracking for:
   // - Static assets (images, CSS, JS, fonts)
