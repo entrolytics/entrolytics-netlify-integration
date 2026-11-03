@@ -100,9 +100,14 @@ async function getTrackingIds(request, context, apiKey, websiteId) {
   const known = Boolean(ip || userAgent);
   const now = new Date();
 
+  const cookieVisitorId = cookies[VISITOR_COOKIE_NAME];
   const visitorId =
-    cookies[VISITOR_COOKIE_NAME] ||
+    cookieVisitorId ||
     (known ? await deriveVisitorId(apiKey, websiteId, ip, userAgent, now) : createUuid());
+  // How long visitorId identifies the visitor; the API's retention report counts only persistent
+  // ids. The year-long cookie is persistent, the derived id rotates daily, and a random id has no
+  // defined lifetime.
+  const visitorIdScope = cookieVisitorId ? "persistent" : known ? "daily" : undefined;
   const sessionId = known
     ? await deriveSessionId(apiKey, websiteId, ip, userAgent, now)
     : createUuid();
@@ -112,7 +117,7 @@ async function getTrackingIds(request, context, apiKey, websiteId) {
     setCookies.push(buildCookie(VISITOR_COOKIE_NAME, visitorId, secure, VISITOR_COOKIE_MAX_AGE));
   }
 
-  return { visitorId, sessionId, setCookies };
+  return { visitorId, visitorIdScope, sessionId, setCookies };
 }
 
 /**
@@ -153,6 +158,7 @@ async function trackEvent(options, context, request, trackingIds) {
     timestamp: new Date().toISOString(),
     sessionId: trackingIds.sessionId,
     visitorId: trackingIds.visitorId,
+    ...(trackingIds.visitorIdScope && { visitorIdScope: trackingIds.visitorIdScope }),
     url: url.toString(),
     eventType: "pageview",
     ...(normalizedReferrer && { referrer: normalizedReferrer }),

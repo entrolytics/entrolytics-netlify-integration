@@ -55,6 +55,16 @@ describe("edge function", () => {
     });
 
     assert.equal(payload.visitorId, visitorId);
+    // The year-long cookie follows the visitor across weeks, so the retention report counts it.
+    assert.equal(payload.visitorIdScope, "persistent");
+  });
+
+  it("marks the derived visitor id daily and leaves a random id unscoped", async () => {
+    const derived = await trackRequest({ "user-agent": USER_AGENT });
+    const unknown = await trackRequest({}, "");
+
+    assert.equal(derived.payload.visitorIdScope, "daily");
+    assert.equal("visitorIdScope" in unknown.payload, false);
   });
 
   it("keeps the raw IP and user agent out of event properties", async () => {

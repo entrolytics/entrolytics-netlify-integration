@@ -11,3 +11,7 @@
 - Every edge page view sent the visitor's raw user agent in `properties.headers.userAgent`,
   storing it with the event's custom properties. It is no longer sent there; the API still
   receives it in `X-Forwarded-User-Agent` for attribution and bot screening.
+- Edge page views did not say how long their `visitorId` identifies the visitor, so the API's
+  retention report, which counts only persistent visitor ids, could not use them. They now send
+  `visitorIdScope`: `persistent` for the id from the year-long `entrolytics_vid` cookie, `daily`
+  for the id derived from the IP address and user agent; it is left out for a random id.
