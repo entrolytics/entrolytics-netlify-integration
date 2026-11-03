@@ -12,9 +12,8 @@
 
 const DEFAULT_HOST = "https://api.entrolytics.click";
 const VISITOR_COOKIE_NAME = "entrolytics_vid";
-const SESSION_COOKIE_NAME = "entrolytics_sid";
 const VISITOR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
-const SESSION_COOKIE_MAX_AGE = 60 * 30;
+const SESSION_WINDOW_MS = 30 * 60 * 1000;
 
 function createUuid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
@@ -51,6 +50,22 @@ function buildCookie(name, value, secure, maxAge) {
   return parts.join("; ");
 }
 
+async function hmacUuid(apiKey, message) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(apiKey),
+    { hash: "SHA-256", name: "HMAC" },
+    false,
+    ["sign"],
+  );
+  const bytes = new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(message)));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes.slice(0, 16), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 /**
  * A site-scoped visitor id that rotates at midnight UTC, derived from the visitor's IP address and
  * user agent.
@@ -60,22 +75,21 @@ function buildCookie(name, value, secure, maxAge) {
  * cookie. The key is the API key, so the id cannot be recomputed from an IP address and user
  * agent alone.
  */
-async function deriveVisitorId(apiKey, websiteId, ip, userAgent) {
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(apiKey),
-    { hash: "SHA-256", name: "HMAC" },
-    false,
-    ["sign"],
-  );
-  const day = new Date().toISOString().slice(0, 10);
-  const message = `${websiteId}\u0000${day}\u0000${ip}\u0000${userAgent}`;
-  const bytes = new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(message)));
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  const hex = Array.from(bytes.slice(0, 16), (byte) => byte.toString(16).padStart(2, "0")).join("");
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+function deriveVisitorId(apiKey, websiteId, ip, userAgent, now) {
+  const day = now.toISOString().slice(0, 10);
+  return hmacUuid(apiKey, `${websiteId}\u0000${day}\u0000${ip}\u0000${userAgent}`);
+}
+
+/**
+ * A session id for the visitor's 30-minute UTC window (starting on the hour and the half hour),
+ * derived like the visitor id from the IP address and user agent, with no cookie. A visit that
+ * crosses a window boundary counts as two sessions.
+ */
+function deriveSessionId(apiKey, websiteId, ip, userAgent, now) {
+  const slot = new Date(Math.floor(now.getTime() / SESSION_WINDOW_MS) * SESSION_WINDOW_MS)
+    .toISOString()
+    .slice(0, 16);
+  return hmacUuid(apiKey, `${websiteId}\u0000session\u0000${slot}\u0000${ip}\u0000${userAgent}`);
 }
 
 async function getTrackingIds(request, context, apiKey, websiteId) {
@@ -83,18 +97,20 @@ async function getTrackingIds(request, context, apiKey, websiteId) {
   const secure = new URL(request.url).protocol === "https:";
   const ip = context.ip || "";
   const userAgent = request.headers.get("user-agent") || "";
+  const known = Boolean(ip || userAgent);
+  const now = new Date();
 
   const visitorId =
     cookies[VISITOR_COOKIE_NAME] ||
-    (ip || userAgent ? await deriveVisitorId(apiKey, websiteId, ip, userAgent) : createUuid());
-  const sessionId = cookies[SESSION_COOKIE_NAME] || createUuid();
+    (known ? await deriveVisitorId(apiKey, websiteId, ip, userAgent, now) : createUuid());
+  const sessionId = known
+    ? await deriveSessionId(apiKey, websiteId, ip, userAgent, now)
+    : createUuid();
   const setCookies = [];
 
   if (!cookies[VISITOR_COOKIE_NAME]) {
     setCookies.push(buildCookie(VISITOR_COOKIE_NAME, visitorId, secure, VISITOR_COOKIE_MAX_AGE));
   }
-
-  setCookies.push(buildCookie(SESSION_COOKIE_NAME, sessionId, secure, SESSION_COOKIE_MAX_AGE));
 
   return { visitorId, sessionId, setCookies };
 }

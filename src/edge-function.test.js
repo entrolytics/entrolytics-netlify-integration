@@ -21,9 +21,9 @@ async function trackRequest(headers) {
 
   const request = new Request("https://example.test/pricing", { headers });
   const context = { geo: {}, ip: "203.0.113.7", next: async () => new Response("ok") };
-  await edgeFunction(request, context);
+  const response = await edgeFunction(request, context);
   const init = await sent;
-  return { headers: init.headers, payload: JSON.parse(init.body) };
+  return { headers: init.headers, payload: JSON.parse(init.body), response };
 }
 
 describe("edge function", () => {
@@ -55,5 +55,30 @@ describe("edge function", () => {
     });
 
     assert.equal(payload.visitorId, visitorId);
+  });
+
+  it("derives one session per visitor per half hour without a session cookie", async () => {
+    const sessions = [];
+    for (const time of [
+      "2026-09-24T14:30:00Z",
+      "2026-09-24T14:47:00Z",
+      "2026-09-24T14:59:59Z",
+      "2026-09-24T15:00:00Z",
+    ]) {
+      mock.timers.setTime(new Date(time).getTime());
+      const { payload, response } = await trackRequest({
+        cookie: "entrolytics_sid=0b8f6a52-3c1d-4e7f-8a9b-1c2d3e4f5a6b",
+        "user-agent": USER_AGENT,
+      });
+      sessions.push(payload.sessionId);
+      assert.doesNotMatch(response.headers.get("set-cookie") || "", /entrolytics_sid/);
+    }
+
+    assert.deepEqual(sessions, [
+      "6e75928f-813d-49ee-a4dc-5d2e299d7eb2",
+      "6e75928f-813d-49ee-a4dc-5d2e299d7eb2",
+      "6e75928f-813d-49ee-a4dc-5d2e299d7eb2",
+      "f656564a-ee6c-4cc1-8309-0b69c73bfd3d",
+    ]);
   });
 });
