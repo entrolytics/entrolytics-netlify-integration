@@ -118,7 +118,7 @@ npm install -D @entrolytics/netlify-plugin
 | Input                | Description                                                 | Default                          |
 | -------------------- | ----------------------------------------------------------- | -------------------------------- |
 | `websiteId`          | Your Entrolytics website ID                                 | `ENTROLYTICS_WEBSITE_ID` env var |
-| `host`               | Entrolytics host URL                                        | `https://entrolytics.click`      |
+| `host`               | Entrolytics host URL                                        | `https://entrolytics.dev`      |
 | `autoTrack`          | Automatically track page views                              | `true`                           |
 | `respectDnt`         | Respect Do Not Track setting                                | `false`                          |
 | `injectInHead`       | Inject in `<head>` vs before `</body>`                      | `true`                           |
@@ -205,7 +205,7 @@ This deploys a Netlify Edge Function that:
 
 ```bash
 ENTROLYTICS_WEBSITE_ID=abc123-def456
-ENTROLYTICS_HOST=https://entrolytics.click  # Optional: self-hosted instance
+ENTROLYTICS_HOST=https://entrolytics.dev  # Optional: self-hosted instance
 
 ENTROLYTICS_EDGE_MODE=auto  # Options: auto (default), server, client
 

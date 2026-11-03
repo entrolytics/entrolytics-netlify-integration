@@ -9,9 +9,9 @@
     "netlify-plugin",
     "web-analytics"
   ],
-  "homepage": "https://entrolytics.click",
+  "homepage": "https://entrolytics.dev",
   "license": "MIT",
-  "author": "Entrolytics <hey@entrolytics.click>",
+  "author": "Entrolytics <hey@entrolytics.dev>",
   "repository": {
     "type": "git",
     "url": "https://github.com/entrolytics/netlify-plugin"
@@ -34,15 +34,15 @@
     "format": "oxfmt --write src package.json manifest.yml"
   },
   "dependencies": {
-    "@entrolytics/shared": "^3.0.1"
+    "@entrolytics/shared": "^3.1.0"
   },
   "devDependencies": {
-    "@netlify/build": "^36.4.7",
-    "oxfmt": "^0.67.0",
-    "oxlint": "^1.82.0"
+    "@netlify/build": "^37.7.5",
+    "oxfmt": "^0.76.0",
+    "oxlint": "^1.91.0"
   },
   "engines": {
-    "node": ">=24.20.0"
+    "node": ">=24.22.2"
   },
-  "packageManager": "pnpm@11.26.0"
+  "packageManager": "pnpm@12.17.0"
 }

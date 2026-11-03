@@ -14,7 +14,7 @@ import { API_ROUTES } from "@entrolytics/shared";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const DEFAULT_HOST = "https://api.entrolytics.click";
+const DEFAULT_HOST = "https://api.entrolytics.dev";
 
 /**
  * Generate the Entrolytics script tag

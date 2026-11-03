@@ -10,7 +10,7 @@
  * when enableEdgeTracking is set to true.
  */
 
-const DEFAULT_HOST = "https://api.entrolytics.click";
+const DEFAULT_HOST = "https://api.entrolytics.dev";
 const VISITOR_COOKIE_NAME = "entrolytics_vid";
 const VISITOR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 const SESSION_WINDOW_MS = 30 * 60 * 1000;
