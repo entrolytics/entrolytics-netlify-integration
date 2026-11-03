@@ -161,9 +161,6 @@ async function trackEvent(options, context, request, trackingIds) {
       geo,
       hostname: url.hostname,
       language: request.headers.get("accept-language")?.split(",")[0] || "",
-      headers: {
-        userAgent: request.headers.get("user-agent") || "",
-      },
     },
   };
 

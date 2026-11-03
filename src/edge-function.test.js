@@ -9,7 +9,7 @@ const env = {
   ENTROLYTICS_WEBSITE_ID: "6f1c7c8e-5d3b-4f5a-9d1e-2b6f0c9a7e41",
 };
 
-async function trackRequest(headers) {
+async function trackRequest(headers, ip = "203.0.113.7") {
   let resolveSent;
   const sent = new Promise((resolve) => {
     resolveSent = resolve;
@@ -20,7 +20,7 @@ async function trackRequest(headers) {
   };
 
   const request = new Request("https://example.test/pricing", { headers });
-  const context = { geo: {}, ip: "203.0.113.7", next: async () => new Response("ok") };
+  const context = { geo: {}, ip, next: async () => new Response("ok") };
   const response = await edgeFunction(request, context);
   const init = await sent;
   return { headers: init.headers, payload: JSON.parse(init.body), response };
@@ -55,6 +55,14 @@ describe("edge function", () => {
     });
 
     assert.equal(payload.visitorId, visitorId);
+  });
+
+  it("keeps the raw IP and user agent out of event properties", async () => {
+    const { payload } = await trackRequest({ "user-agent": USER_AGENT });
+
+    const properties = JSON.stringify(payload.properties);
+    assert.doesNotMatch(properties, /Mozilla|Safari/);
+    assert.doesNotMatch(properties, /203\.0\.113\.7/);
   });
 
   it("derives one session per visitor per half hour without a session cookie", async () => {
