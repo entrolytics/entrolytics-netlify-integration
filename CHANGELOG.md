@@ -13,5 +13,5 @@
   receives it in `X-Forwarded-User-Agent` for attribution and bot screening.
 - Edge page views did not say how long their `visitorId` identifies the visitor, so the API's
   retention report, which counts only persistent visitor ids, could not use them. They now send
-  `visitorIdScope`: `persistent` for the id from the year-long `entrolytics_vid` cookie, `daily`
-  for the id derived from the IP address and user agent; it is left out for a random id.
+  `visitorIdScope: "persistent"`: the id is always the one in the year-long `entrolytics_vid`
+  cookie or, on a first visit, the one the response writes into it.

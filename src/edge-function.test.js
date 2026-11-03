@@ -59,12 +59,18 @@ describe("edge function", () => {
     assert.equal(payload.visitorIdScope, "persistent");
   });
 
-  it("marks the derived visitor id daily and leaves a random id unscoped", async () => {
+  it("marks a first visit's id persistent because the response stores it in the cookie", async () => {
     const derived = await trackRequest({ "user-agent": USER_AGENT });
     const unknown = await trackRequest({}, "");
 
-    assert.equal(derived.payload.visitorIdScope, "daily");
-    assert.equal("visitorIdScope" in unknown.payload, false);
+    for (const { payload, response } of [derived, unknown]) {
+      assert.equal(payload.visitorIdScope, "persistent");
+      assert.match(
+        response.headers.get("set-cookie"),
+        new RegExp(`entrolytics_vid=${payload.visitorId};`),
+      );
+      assert.match(response.headers.get("set-cookie"), /Max-Age=31536000/);
+    }
   });
 
   it("keeps the raw IP and user agent out of event properties", async () => {
