@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [3.0.3] - 2026-11-26
+
 ### Changed
 
 - Built and released with pnpm 12.24.0. No code changes.
@@ -22,5 +24,6 @@
   `visitorIdScope: "persistent"`: the id is always the one in the year-long `entrolytics_vid`
   cookie or, on a first visit, the one the response writes into it.
 
-[Unreleased]: https://github.com/entrolytics/entrolytics-netlify-integration/compare/v3.0.2...HEAD
+[Unreleased]: https://github.com/entrolytics/entrolytics-netlify-integration/compare/v3.0.3...HEAD
+[3.0.3]: https://github.com/entrolytics/entrolytics-netlify-integration/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/entrolytics/entrolytics-netlify-integration/releases/tag/v3.0.2
