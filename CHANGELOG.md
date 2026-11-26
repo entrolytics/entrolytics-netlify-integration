@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## [Unreleased]
+
+## [3.0.2] - 2026-11-26
 
 ### Fixed
 
@@ -15,3 +17,6 @@
   retention report, which counts only persistent visitor ids, could not use them. They now send
   `visitorIdScope: "persistent"`: the id is always the one in the year-long `entrolytics_vid`
   cookie or, on a first visit, the one the response writes into it.
+
+[Unreleased]: https://github.com/entrolytics/entrolytics-netlify-integration/compare/v3.0.2...HEAD
+[3.0.2]: https://github.com/entrolytics/entrolytics-netlify-integration/releases/tag/v3.0.2
