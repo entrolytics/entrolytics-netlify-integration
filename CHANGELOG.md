@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Built and released with pnpm 12.24.0. No code changes.
+
 ## [3.0.2] - 2026-11-26
 
 ### Fixed
