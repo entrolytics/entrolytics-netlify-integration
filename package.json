@@ -34,15 +34,15 @@
     "format": "oxfmt --write src package.json manifest.yml"
   },
   "dependencies": {
-    "@entrolytics/shared": "^3.1.0"
+    "@entrolytics/shared": "^3.2.0"
   },
   "devDependencies": {
-    "@netlify/build": "^37.7.5",
-    "oxfmt": "^0.76.0",
-    "oxlint": "^1.91.0"
+    "@netlify/build": "^37.8.0",
+    "oxfmt": "^0.80.0",
+    "oxlint": "^1.95.0"
   },
   "engines": {
-    "node": ">=24.22.2"
+    "node": ">=24.22.3"
   },
-  "packageManager": "pnpm@12.17.0"
+  "packageManager": "pnpm@12.23.0"
 }
