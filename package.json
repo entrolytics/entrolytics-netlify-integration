@@ -34,7 +34,7 @@
     "format": "oxfmt --write src package.json manifest.yml"
   },
   "dependencies": {
-    "@entrolytics/shared": "^3.2.0"
+    "@entrolytics/shared": "^3.2.1"
   },
   "devDependencies": {
     "@netlify/build": "^37.8.0",
