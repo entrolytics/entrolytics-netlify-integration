@@ -1,6 +1,6 @@
 {
   "name": "@entrolytics/netlify-plugin",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Netlify integration for Entrolytics - First-party growth analytics for the edge",
   "keywords": [
     "analytics",

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [3.0.4] - 2026-11-28
+
 ### Changed
 
 - Requires `@entrolytics/shared` 3.2.2.
@@ -28,6 +30,7 @@
   `visitorIdScope: "persistent"`: the id is always the one in the year-long `entrolytics_vid`
   cookie or, on a first visit, the one the response writes into it.
 
-[Unreleased]: https://github.com/entrolytics/entrolytics-netlify-integration/compare/v3.0.3...HEAD
+[Unreleased]: https://github.com/entrolytics/entrolytics-netlify-integration/compare/v3.0.4...HEAD
+[3.0.4]: https://github.com/entrolytics/entrolytics-netlify-integration/compare/v3.0.3...v3.0.4
 [3.0.3]: https://github.com/entrolytics/entrolytics-netlify-integration/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/entrolytics/entrolytics-netlify-integration/releases/tag/v3.0.2
