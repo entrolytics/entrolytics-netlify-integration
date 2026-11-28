@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Requires `@entrolytics/shared` 3.2.2.
+
 ## [3.0.3] - 2026-11-26
 
 ### Changed
